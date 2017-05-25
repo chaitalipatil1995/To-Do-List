@@ -16,9 +16,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     @IBOutlet var listTableView: UITableView!
     var tasks : [NSManagedObject] = []
     var dateString = NSString()
-    let indexPath = NSString()
-    
-     var indexValue :String = ""
+    var indexPath = Int()
+    var indexValue :String = ""
     
     @IBOutlet var taskDatePicker: UIDatePicker!
     @IBOutlet var refreshOutlet: UIButton!
@@ -28,24 +27,18 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
         listTableView.backgroundColor = UIColor.clear
         self.automaticallyAdjustsScrollViewInsets = false
-        
         let titleDict: NSDictionary = [NSForegroundColorAttributeName: UIColor.white]
         self.navigationController?.navigationBar.titleTextAttributes = titleDict as? [String : Any]
-        
         self.navigationController?.navigationBar.barTintColor = UIColor.black
         viewForPicker.isHidden = true
         viewForPicker.backgroundColor = UIColor.white
         viewForPicker.layer.borderColor = UIColor.black.cgColor
         viewForPicker.layer.borderWidth = 2
         viewForPicker.layer.cornerRadius = 5
-        
         taskDatePicker.layer.borderWidth = 0.5
-
         okOutlet.layer.borderWidth = 0.5
         cancelOutlet.layer.borderWidth = 0.5
         
-        
-       
     }
     
     func createGradientLayer() {
@@ -90,10 +83,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
 
-    
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
@@ -101,16 +92,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if tasks.count > 0 {
             return tasks.count
-
         } else {
             return 1
         }
-
-//        do {
-//            return try tasks.count
-//        } catch {
-//            print("array bounds to zero");
-//        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -120,26 +104,24 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         cell.backgroundColor = UIColor.clear
         cell.taskLabel.font = UIFont.systemFont(ofSize: 20)
         cell.taskLabel.font = UIFont.boldSystemFont(ofSize: 22)
-        
         cell.cellDelegate = self
-        cell.tag = indexPath.row
-        
+        cell.editButton.tag = indexPath.row
         print(cell.tag)
         print(indexPath.row)
-        
-        if tasks.count > 0  {
-            let taskSTring = tasks[indexPath.row]
-            cell.taskLabel.text = taskSTring.value(forKey: "task") as? String
-            cell.timeLabel.text = taskSTring.value(forKey: "time") as? String
-
-            //cell.timeLabel.text = (dateString as NSString) as String;
-            
-        } else {
-            cell.taskLabel.text = "No Task avaialable"
-        }
+       
+            if  tasks.count > 0  {
+                let taskSTring = tasks[indexPath.row]
+                cell.taskLabel.text = taskSTring.value(forKey: "task") as? String
+                cell.timeLabel.text = taskSTring.value(forKey: "time") as? String
+            } else {
+                cell.taskLabel.text = "No Task avaialable"
+                cell.timeLabel.text = "00-00-0000 00:00"
+                cell.editButton.isUserInteractionEnabled = false
+            }
+       
         return cell
     }
-    
+   
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             let task = tasks[indexPath.row]
@@ -150,22 +132,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             managedContext.delete(task)
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName : "TASK")
-            
             do {
                 tasks = try managedContext.fetch(fetchRequest)
             } catch {
                 print("Fetching Failed")
             }
         }
-        
-        //self.didPressButton(indexPath.row)
-
-       // let index = indexPath.row
-        
-        indexValue = String(format: "%d", indexPath.row)
-        print(indexPath.row)
-        
-        
         listTableView.reloadData()
     }
     
@@ -173,15 +145,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     @IBAction func addButtonAction(_ sender: AnyObject) {
       
         let alertController = UIAlertController(title: "Note", message: "Add new note which you want to do later", preferredStyle: .alert)
-        
         let saveAction = UIAlertAction(title: "Save", style: .default, handler: {
             alert -> Void in
             let firstTextField = alertController.textFields![0] as UITextField
-            
             firstTextField.delegate = self
-            
             let nameToSave = firstTextField.text
-
             guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
                 return
             }
@@ -193,51 +161,35 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 try managedContext.save()
                 self.tasks.append(task)
                 self.viewWillAppear(true)
-
             } catch let error as NSError {
                 print("counld not save. \(error), \(error.userInfo)")
             }
-            
 
         })
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .default, handler: {
             (action : UIAlertAction!) -> Void in
-            
         })
-        
         alertController.addTextField { (textField : UITextField!) -> Void in
             textField.placeholder = "Enter task"
         }
-       
-        
-
         alertController.addAction(saveAction)
         alertController.addAction(cancelAction)
-        
         self.present(alertController, animated: true, completion: nil)
     }
     private dynamic func didRecognizeTapGesture(_ gesture: UITapGestureRecognizer) {
-       // let point = gesture.location(in: gesture.view)
-        
-       // guard gesture.state == .ended, textField.frame.contains(point) else { return }
         print("succefully can use calender")
     }
     
     @IBAction func refreshButtonAction(_ sender: AnyObject) {
-    
         self.viewWillAppear(true)
         listTableView .reloadData()
-        
-    
     }
     func didPressButton(_ tag: NSInteger) {
         print("I have pressed a button with a tag: \(tag)")
         viewForPicker.isHidden = false
-        
-        //indexPath = tag
+        indexPath = tag
         print(tag)
-        
     }
    
     @IBAction func pickerOkAction(_ sender: AnyObject) {
@@ -247,31 +199,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         let strDate = dateFormatter.string(from: taskDatePicker.date)
          dateString = strDate as NSString
         print(dateString )
-        
-        // save in core data
-        
-        /*
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-            return
-        }
-        let managedContext = appDelegate.persistentContainer.viewContext
-        let entity = NSEntityDescription.entity(forEntityName: "TASK", in: managedContext)!
-        let task = NSManagedObject(entity: entity, insertInto: managedContext)
-        task.setValue(dateString, forKey: "time")
-        do{
-            try managedContext.save()
-            self.tasks.append(task)
-            self.viewWillAppear(true)
-            
-        } catch let error as NSError {
-            print("counld not save. \(error), \(error.userInfo)")
-        }
- */
-        self.updateName(index: 6, newName: dateString as String)
-        
+        self.updateName(index: indexPath, newName: dateString as String)
         self.viewWillAppear(true)
         viewForPicker.isHidden = true
-        
     }
     
     @IBAction func pickerCancelAction(_ sender: AnyObject) {
@@ -279,12 +209,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     func updateName(index: Int, newName: String){
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        //tasks[index].task = newName
-        
         tasks[index] .setValue(newName, forKey: "time")
-        
         appDelegate.saveContext()
-        
     }
 }
 

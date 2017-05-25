@@ -13,6 +13,9 @@ class ListTableViewCell: UITableViewCell {
     weak var cellDelegate: cellDelegateProtocol?
    // var tag: Int = 0
     @IBOutlet var timeLabel: UILabel!
+    
+    @IBOutlet var editButton: UIButton!
+    
     @IBAction func editButtonAction(_ sender: AnyObject) {
         
         cellDelegate?.didPressButton(sender.tag)

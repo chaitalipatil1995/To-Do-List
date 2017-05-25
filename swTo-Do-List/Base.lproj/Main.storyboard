@@ -86,6 +86,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
+                                            <outlet property="editButton" destination="xHJ-Fh-hcn" id="GnH-GD-MIw"/>
                                             <outlet property="taskLabel" destination="IWf-vy-0ig" id="3Pm-0C-K43"/>
                                             <outlet property="timeLabel" destination="Gs5-5Y-7au" id="gaq-aS-kRh"/>
                                         </connections>
